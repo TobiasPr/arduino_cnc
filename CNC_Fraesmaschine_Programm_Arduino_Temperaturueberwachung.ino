@@ -1,6 +1,7 @@
 #include <Wire.h>               // Wire Bibliothek hochladen
 #include <LiquidCrystal_I2C.h>  // Vorher hinzugefügte LiquidCrystal_I2C Bibliothek hochladen
 #include <DallasTemperature.h>
+#include "custom_chars.h"
 
 LiquidCrystal_I2C lcd1(0x27, 16, 2);  //Hier wird das erste Display benannt (Adresse/Zeichen pro Zeile/Anzahl Zeilen). In unserem Fall „lcd1“. Die Adresse des I²C Displays kann je nach Modul variieren.
 LiquidCrystal_I2C lcd2(0x26, 16, 2);  //Hier wird das zweite LCD benannt, hier "lcd2".
@@ -34,7 +35,7 @@ unsigned long tasterTimestamp;
 
 // Flow Sensor
 int PIN_FLOW_SENSOR = 03;
-const float PULSES_PER_LITER = 6.6;  // Change this to match the datasheet of your sensor
+const float PULSES_PER_LITER = 6.6;  //from datasheet of sensor
 unsigned long pulseCount = 0;
 unsigned long lastPulseTime = 0;
 float flowRate = 0.0;
@@ -57,10 +58,10 @@ float Senosr_plus5V_nicht_angeschlossen = 85;
 // Zusätzliche Informationen auf Serial Monitor ausgeben
 bool printConfigInfo = true;
 bool printAllInfo = false;
-bool printTempInfo = true;
+bool printTempInfo = false;
 bool printTasterInfo = false;
 bool printSensorAddressInfo = false;
-bool printFlowSensorInfo = false;
+bool printFlowSensorInfo = true;
 bool printRelaisInfo = false;
 
 
@@ -74,6 +75,7 @@ void setup() {
   lcd3.backlight();
   lcd4.backlight();
   Serial.begin(9600);
+  Serial.println("Starting program");
   pinMode(RELAISPIN3, OUTPUT);
   pinMode(PIN_TASTER, INPUT_PULLUP);
   pinMode(PIN_FLOW_SENSOR, INPUT_PULLUP);
@@ -81,6 +83,10 @@ void setup() {
   printConfigurationInformation("RelaisPin: " + String(RELAISPIN3));
   printConfigurationInformation("FlowPin: " + String(PIN_FLOW_SENSOR));
   printConfigurationInformation("TasterPin: " + String(PIN_TASTER));
+
+  // custom chars
+  lcd3.createChar(0, waterDrop);
+  lastPulseTime = millis(); // set this to have correct flowRate from start
 }
 
 void looplcd() {
@@ -93,6 +99,16 @@ void looplcd() {
   float TempWasser = sensors.getTempC(Wasser);
   float TempSteuerung = sensors.getTempC(Steuerung);
   float TempRaumtemp = sensors.getTempC(Raumtemp);
+
+  unsigned long now = millis();
+  unsigned long pulseDuration = now - lastPulseTime;
+  if (pulseDuration > 10000) {
+    // Calculate the flow rate in liters per minute
+    flowRate = (pulseCount / (PULSES_PER_LITER * 10)) * (10000.0 / pulseDuration);
+    printFlowInformation("Flow rate: " + String(flowRate) + " L/min");
+    lastPulseTime = now;
+    pulseCount = 0;
+  }
                                                       
   String z_achse_temp_string = "Z-Achse " + String(TempZAchse, 1) + "\337C";
   lcd1.setCursor(0, 0); 
@@ -114,8 +130,10 @@ void looplcd() {
   lcd3.setCursor(0, 0);
   lcd3.print(spindel_achse_temp_string);
 
-  String wasser_temp_string = "Wasser  " + String(TempWasser, 1) + "\337C";
+  String wasser_temp_string = String(flowRate, 1) + "L/min "+ String(TempWasser, 1) + "\337C";
   lcd3.setCursor(0, 1);
+  lcd3.write(byte(0));
+  lcd3.setCursor(1, 1);
   lcd3.print(wasser_temp_string);
 
   String steuerung_temp_string = "Steuerung " + String(TempSteuerung, 1) + "\337C";
@@ -144,16 +162,6 @@ void looplcd() {
   if (tasterGedrueckt && tasterTimestamp == NULL) {
     printTasterInformation("Taster gedrückt");
     tasterTimestamp = millis();
-  }
-
-  unsigned long now = millis();
-  unsigned long pulseDuration = now - lastPulseTime;
-  if (pulseDuration > 10000) {
-    // Calculate the flow rate in liters per minute
-    flowRate = (pulseCount / (PULSES_PER_LITER * 10)) * (10000.0 / pulseDuration);
-    printFlowInformation("Flow rate: " + String(flowRate) + " L/min");
-    lastPulseTime = now;
-    pulseCount = 0;
   }
 
   // wenn eine der Temparaturen zu hoch -> Relais HIGH
