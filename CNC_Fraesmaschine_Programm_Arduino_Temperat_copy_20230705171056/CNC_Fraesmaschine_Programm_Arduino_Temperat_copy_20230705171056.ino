@@ -94,10 +94,15 @@ String getTempString(DeviceAddress address) {
   
 }
 
+String printTemperaturOnLCD(String name, float temperature, LiquidCrystal_I2C* lcd, int row) {
+  String outputValue = name + " " + String(temperature, 1) + "\337C";
+  lcd->setCursor(0, row); 
+  lcd->print(outputValue);        
+}
+
 void looplcd() {
   sensors.requestTemperatures();
-  float TempZAchse = ç;
-  
+  float TempZAchse = sensors.getTempC(ZAchse);
   float TempY1Achse = sensors.getTempC(Y1Achse);
   float TempY2Achse = sensors.getTempC(Y2Achse);
   float TempSpindel = sensors.getTempC(Spindel);
@@ -115,25 +120,12 @@ void looplcd() {
     pulseCount = 0;
   }
                                                       
-  String z_achse_temp_string = "Z-Achse " + String(TempZAchse, 1) + "\337C";
-  lcd1.setCursor(0, 0); 
-  lcd1.print(z_achse_temp_string);                                           
-                                                         
-  String x_achse_temp_string = "X-Achse " + String(TempXAchse, 1) + "\337C";
-  lcd1.setCursor(0, 1);
-  lcd1.print(x_achse_temp_string);    
-                                              
-  String y1_achse_temp_string = "Y1-Achse " + String(TempY1Achse, 1) + "\337C";
-  lcd2.setCursor(0, 0);
-  lcd2.print(y1_achse_temp_string);      
-                                                      
-  String y2_achse_temp_string = "Y2-Achse " + String(TempY2Achse, 1) + "\337C";
-  lcd2.setCursor(0, 1);
-  lcd2.print(y2_achse_temp_string);                                           
-  
-  String spindel_achse_temp_string = "Spindel " + String(TempSpindel, 1) + "\337C";
-  lcd3.setCursor(0, 0);
-  lcd3.print(spindel_achse_temp_string);
+  String z_achse_temp_string = " " + String(TempZAchse, 1) + "\337C";
+  printTemperaturOnLCD("Z-Achse", TempZAchse, lcd1, 0);                                
+  printTemperaturOnLCD("X-Achse", TempXAchse, lcd1, 1);    
+  printTemperaturOnLCD("Y1-Achse", TempY1Achse, lcd2, 0);        
+  printTemperaturOnLCD("Y2-Achse", TempY2Achse, lcd2, 1);  
+  printTemperaturOnLCD("Spindel", TempSpindel, lcd3, 0);
 
   String wasser_temp_string = String(flowRate, 1) + "L/min "+ String(TempWasser, 1) + "\337C";
   lcd3.setCursor(0, 1);
@@ -141,13 +133,8 @@ void looplcd() {
   lcd3.setCursor(1, 1);
   lcd3.print(wasser_temp_string);
 
-  String steuerung_temp_string = "Steuerung " + String(TempSteuerung, 1) + "\337C";
-  lcd4.setCursor(0, 0);
-  lcd4.print(steuerung_temp_string);
-
-  String raum_temp_string = "Raumtemp. " + String(TempRaumtemp, 1) + "\337C";
-  lcd4.setCursor(0, 1); 
-  lcd4.print(raum_temp_string);   
+  printTemperaturOnLCD("Steuerung", TempSteuerung, lcd4, 0);
+  printTemperaturOnLCD("Raumtemp.", TempRaumtemp, lcd4, 1); 
 
   printTempInformation(z_achse_temp_string);
   printTempInformation(x_achse_temp_string);
