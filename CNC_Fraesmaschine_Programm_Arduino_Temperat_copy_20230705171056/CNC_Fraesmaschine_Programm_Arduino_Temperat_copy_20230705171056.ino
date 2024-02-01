@@ -94,11 +94,17 @@ String getTempString(DeviceAddress address) {
   
 }
 
-String printTemperaturOnLCD(String name, float temperature, LiquidCrystal_I2C* lcd, int row) {
-  String outputValue = name + " " + String(temperature, 1) + "\337C";
-  lcd->setCursor(0, row); 
-  lcd->print(outputValue);       
-  printTempInformation(outputValue); 
+void printTemperaturOnLCD(String name, float temperature, LiquidCrystal_I2C* lcd, int row) {
+  if(temperature >= 0){
+    String outputValue = name + " " + String(temperature, 1) + "\337C";
+    lcd->setCursor(0, row); 
+    lcd->print(outputValue);       
+    printTempInformation(outputValue); 
+  }else {
+    String outputValue = name + " n/a ";
+    lcd->setCursor(0, row); 
+    lcd->print(outputValue);  
+  }
 }
 
 void looplcd() {
@@ -150,8 +156,7 @@ void looplcd() {
 
   // wenn eine der Temparaturen zu hoch -> Relais HIGH
   // TODO: wenn Taster gedrückt dann -> Relais LOW für 60 sec
-  if (shouldRelaisTriggerTemp(TempZAchse, Z_Achse_Maximal_Temp) ||
-      shouldRelaisTriggerTemp(TempXAchse, X_Achse_Maximal_Temp) ||
+  if (shouldRelaisTriggerTemp(TempXAchse, X_Achse_Maximal_Temp) ||
       shouldRelaisTriggerTemp(TempY1Achse, Y1_Achse_Maximal_Temp) ||
       shouldRelaisTriggerTemp(TempY2Achse, Y2_Achse_Maximal_Temp) ||
       shouldRelaisTriggerTemp(TempSpindel, Spindel_Maximal_Temp) ||
