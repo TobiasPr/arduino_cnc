@@ -58,7 +58,7 @@ float Senosr_plus5V_nicht_angeschlossen = 85;
 // Zusätzliche Informationen auf Serial Monitor ausgeben
 bool printConfigInfo = true;
 bool printAllInfo = false;
-bool printTempInfo = false;
+bool printTempInfo = true;
 bool printTasterInfo = false;
 bool printSensorAddressInfo = false;
 bool printFlowSensorInfo = true;
@@ -69,7 +69,7 @@ void setup() {
   lcd1.init();  //Im Setup wird das LCD1 gestartet
   lcd2.init();  //Im Setup wird das LCD2 gestartet
   lcd3.init();
-  lcd4.init();
+  lcd4.init(); 
   lcd1.backlight();  //Hintergrundbeleuchtung von LCD1 einschalten (0 schaltet die Beleuchtung aus).
   lcd2.backlight();  //Hintergrundbeleuchtung von LCD2 einschalten (0 schaltet die Beleuchtung aus).
   lcd3.backlight();
@@ -89,10 +89,15 @@ void setup() {
   lastPulseTime = millis(); // set this to have correct flowRate from start
 }
 
+String getTempString(DeviceAddress address) {
+  float TempY1Achse = sensors.getTempC(Y1Achse);
+  
+}
+
 void looplcd() {
   sensors.requestTemperatures();
-  float TempZAchse = sensors.getTempC(ZAchse);
-  float TempXAchse = sensors.getTempC(XAchse);
+  float TempZAchse = ç;
+  
   float TempY1Achse = sensors.getTempC(Y1Achse);
   float TempY2Achse = sensors.getTempC(Y2Achse);
   float TempSpindel = sensors.getTempC(Spindel);
