@@ -125,12 +125,11 @@ void looplcd() {
     pulseCount = 0;
   }
                                                       
-  String z_achse_temp_string = " " + String(TempZAchse, 1) + "\337C";
-  printTemperaturOnLCD("Z-Achse", TempZAchse, &lcd1, 0);                                
-  printTemperaturOnLCD("X-Achse", TempXAchse, &lcd1, 1);    
+  String z_achse_temp_string = " " + String(TempZAchse, 1) + "\337C";                              
+  printTemperaturOnLCD("X-Achse", TempXAchse, &lcd1, 0);    
   printTemperaturOnLCD("Y1-Achse", TempY1Achse, &lcd2, 0);        
   printTemperaturOnLCD("Y2-Achse", TempY2Achse, &lcd2, 1);  
-  printTemperaturOnLCD("WasserTemp", TempWasser, &lcd3, 0);
+  printTemperaturOnLCD("Fass", TempWasser, &lcd3, 0);
 
   String wasser_flow_value = String(flowRate, 1) + "L/min";
   lcd3.setCursor(0, 1);
