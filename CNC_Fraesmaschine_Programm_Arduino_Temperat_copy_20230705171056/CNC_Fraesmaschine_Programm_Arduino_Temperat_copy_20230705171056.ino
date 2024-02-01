@@ -39,7 +39,7 @@ const float PULSES_PER_LITER = 6.6;  //from datasheet of sensor
 unsigned long pulseCount = 0;
 unsigned long lastPulseTime = 0;
 float flowRate = 0.0;
-float min_flow_rate = 1.4;  // liter pro minute
+float min_flow_rate = 0.5;  // liter pro minute
 
 // max. Temperaturen der Motoren/Bauteile
 float Z_Achse_Maximal_Temp = 75;
@@ -58,11 +58,12 @@ float Senosr_plus5V_nicht_angeschlossen = 85;
 // Zusätzliche Informationen auf Serial Monitor ausgeben
 bool printConfigInfo = true;
 bool printAllInfo = false;
-bool printTempInfo = true;
+bool printTempInfo = false;
 bool printTasterInfo = false;
 bool printSensorAddressInfo = false;
 bool printFlowSensorInfo = true;
 bool printRelaisInfo = false;
+bool printRelaisTriggerInfo = true;
 
 
 void setup() {
@@ -100,10 +101,6 @@ void printTemperaturOnLCD(String name, float temperature, LiquidCrystal_I2C* lcd
     lcd->setCursor(0, row); 
     lcd->print(outputValue);       
     printTempInformation(outputValue); 
-  }else {
-    String outputValue = name + " n/a ";
-    lcd->setCursor(0, row); 
-    lcd->print(outputValue);  
   }
 }
 
@@ -156,13 +153,11 @@ void looplcd() {
 
   // wenn eine der Temparaturen zu hoch -> Relais HIGH
   // TODO: wenn Taster gedrückt dann -> Relais LOW für 60 sec
-  if (shouldRelaisTriggerTemp(TempXAchse, X_Achse_Maximal_Temp) ||
-      shouldRelaisTriggerTemp(TempY1Achse, Y1_Achse_Maximal_Temp) ||
-      shouldRelaisTriggerTemp(TempY2Achse, Y2_Achse_Maximal_Temp) ||
-      shouldRelaisTriggerTemp(TempSpindel, Spindel_Maximal_Temp) ||
-      shouldRelaisTriggerTemp(TempWasser, Wasser_Maximal_Temp) ||
-      shouldRelaisTriggerTemp(TempSteuerung, Steuerung_Maximal_Temp) ||
-      shouldRelaisTriggerTemp(TempRaumtemp, Raumtemp_Maximal_Temp) ||
+  if (shouldRelaisTriggerTemp(TempY1Achse, Y1_Achse_Maximal_Temp, "Y1-Achse") ||
+      shouldRelaisTriggerTemp(TempY2Achse, Y2_Achse_Maximal_Temp, "Y2-Achse") ||
+      shouldRelaisTriggerTemp(TempWasser, Wasser_Maximal_Temp, "Wasser") ||
+      shouldRelaisTriggerTemp(TempSteuerung, Steuerung_Maximal_Temp, "Steuerung") ||
+      shouldRelaisTriggerTemp(TempRaumtemp, Raumtemp_Maximal_Temp, "Raumtemp") ||
       shouldRelaisTriggerFlow(flowRate, min_flow_rate)) {
     RELAISVALUE = HIGH;
   } else {
@@ -188,8 +183,9 @@ void looplcd() {
   }
 }
 
-bool shouldRelaisTriggerTemp(float sensorValue, float sensorMaxTemp) {
-  if (sensorValue >= sensorMaxTemp || sensorValue == Senosr_Bus_oder_GND__nicht_angeschlossen || sensorValue >= Senosr_plus5V_nicht_angeschlossen) {
+bool shouldRelaisTriggerTemp(float sensorValue, float sensorMaxTemp, String triggerReason) {
+  if (sensorValue >= sensorMaxTemp || sensorValue >= Senosr_plus5V_nicht_angeschlossen) {
+    printRelaisTriggerInformation(triggerReason + " triggered the relais");
     return true;
   } else {
     return false;
@@ -198,6 +194,7 @@ bool shouldRelaisTriggerTemp(float sensorValue, float sensorMaxTemp) {
 
 bool shouldRelaisTriggerFlow(float flowRate, float minFlowRate) {
   if (flowRate < minFlowRate) {
+    printRelaisTriggerInformation("Flow sensor triggered the relais");
     printFlowInformation("FlowSensor triggered");
     return true;
   }else {
@@ -243,6 +240,12 @@ void printConfigurationInformation(String string) {
 
 void printRelaisInformation(String string) {
   if(printAllInfo || printRelaisInfo){
+    Serial.println(string);
+  }
+}
+
+void printRelaisTriggerInformation(String string) {
+  if(printAllInfo || printRelaisTriggerInfo){
     Serial.println(string);
   }
 }
