@@ -133,13 +133,13 @@ void looplcd() {
   printTemperaturOnLCD("X-Achse", TempXAchse, &lcd1, 1);    
   printTemperaturOnLCD("Y1-Achse", TempY1Achse, &lcd2, 0);        
   printTemperaturOnLCD("Y2-Achse", TempY2Achse, &lcd2, 1);  
-  printTemperaturOnLCD("Spindel", TempSpindel, &lcd3, 0);
+  printTemperaturOnLCD("WasserTemp", TempWasser, &lcd3, 0);
 
-  String wasser_temp_string = String(flowRate, 1) + "L/min "+ String(TempWasser, 1) + "\337C";
+  String wasser_flow_value = String(flowRate, 1) + "L/min";
   lcd3.setCursor(0, 1);
   lcd3.write(byte(0));
   lcd3.setCursor(1, 1);
-  lcd3.print(wasser_temp_string);
+  lcd3.print(wasser_flow_value);
 
   printTemperaturOnLCD("Steuerung", TempSteuerung, &lcd4, 0);
   printTemperaturOnLCD("Raumtemp.", TempRaumtemp, &lcd4, 1); 
