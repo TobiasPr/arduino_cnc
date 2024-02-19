@@ -58,6 +58,7 @@ float Spindel_Maximal_Temp = 35;
 float Wasser_Maximal_Temp = 33;
 float Steuerung_Maximal_Temp = 30;
 float Raumtemp_Maximal_Temp = 30;
+double SpindelRuecklauf_Thermistor_Macimal_Temp = 25;
 
 //Fehler Temperatusensoren
 float Senosr_Bus_oder_GND__nicht_angeschlossen = -127;
@@ -132,7 +133,7 @@ void looplcd() {
   float TempFass = sensors.getTempC(Wasser);
   float TempSteuerung = sensors.getTempC(Steuerung);
   float TempRaumtemp = sensors.getTempC(Raumtemp);
-  double TempSpindelRuecklauf_Thermistor = SpindelRuecklauf_Thermistor->readCelsius();
+  double TempSpindelRuecklauf_ThermistorTemp = SpindelRuecklauf_Thermistor->readCelsius();
 
   unsigned long now = millis();
   unsigned long pulseDuration = now - lastPulseTime;
@@ -150,7 +151,7 @@ void looplcd() {
   printTemperaturOnLCD("Y2-Achse", TempY2Achse, &lcd2, 1);  
   printTemperaturOnLCD("Fass", TempFass, &lcd3, 0);
 
-  String wasser_flow_value = String(flowRate, 1) + "L/min " + String(TempSpindelRuecklauf_Thermistor, 1) + "\337C";
+  String wasser_flow_value = String(flowRate, 1) + "L/min " + String(TempSpindelRuecklauf_ThermistorTemp, 1) + "\337C";
   lcd3.setCursor(0, 1);
   lcd3.write(byte(0));
   lcd3.setCursor(1, 1);
@@ -176,6 +177,7 @@ void looplcd() {
       shouldRelaisTriggerTemp(TempFass, Wasser_Maximal_Temp, "Wasser") ||
       shouldRelaisTriggerTemp(TempSteuerung, Steuerung_Maximal_Temp, "Steuerung") ||
       shouldRelaisTriggerTemp(TempRaumtemp, Raumtemp_Maximal_Temp, "Raumtemp") ||
+      shouldRelaisTriggerTemp(TempSpindelRuecklauf_ThermistorTemp, SpindelRuecklauf_Thermistor_Maximal_Temp, "SpiendelRuecklauf") ||
       shouldRelaisTriggerFlow(flowRate, min_flow_rate)) {
     RELAISVALUE = HIGH;
   } else {
