@@ -130,7 +130,7 @@ void looplcd() {
   float TempY1Achse = sensors.getTempC(Y1Achse);
   float TempY2Achse = sensors.getTempC(Y2Achse);
   float TempSpindel = sensors.getTempC(Spindel);
-  float TempFass = sensors.getTempC(Wasser);
+  float TempKuehlwasser = sensors.getTempC(Wasser);
   float TempSteuerung = sensors.getTempC(Steuerung);
   float TempRaumtemp = sensors.getTempC(Raumtemp);
   double TempSpindelRuecklauf_ThermistorTemp = SpindelRuecklauf_Thermistor->readCelsius();
@@ -149,7 +149,7 @@ void looplcd() {
   printTemperaturOnLCD("X-Achse", TempXAchse, &lcd1, 0);    
   printTemperaturOnLCD("Y1-Achse", TempY1Achse, &lcd2, 0);        
   printTemperaturOnLCD("Y2-Achse", TempY2Achse, &lcd2, 1);  
-  printTemperaturOnLCD("Fass", TempFass, &lcd3, 0);
+  printTemperaturOnLCD("Cooling  ", TempKuehlwasser, &lcd3, 0);
 
   String wasser_flow_value = String(flowRate, 1) + "L/min " + String(TempSpindelRuecklauf_ThermistorTemp, 1) + "\337C";
   lcd3.setCursor(0, 1);
@@ -174,10 +174,10 @@ void looplcd() {
   // TODO: wenn Taster gedrückt dann -> Relais LOW für 60 sec
   if (shouldRelaisTriggerTemp(TempY1Achse, Y1_Achse_Maximal_Temp, "Y1-Achse") ||
       shouldRelaisTriggerTemp(TempY2Achse, Y2_Achse_Maximal_Temp, "Y2-Achse") ||
-      shouldRelaisTriggerTemp(TempFass, Wasser_Maximal_Temp, "Wasser") ||
+      shouldRelaisTriggerTemp(TempKuehlwasser, Wasser_Maximal_Temp, "Wasser") ||
       shouldRelaisTriggerTemp(TempSteuerung, Steuerung_Maximal_Temp, "Steuerung") ||
       shouldRelaisTriggerTemp(TempRaumtemp, Raumtemp_Maximal_Temp, "Raumtemp") ||
-      shouldRelaisTriggerTemp(TempSpindelRuecklauf_ThermistorTemp, SpindelRuecklauf_Thermistor_Maximal_Temp, "SpiendelRuecklauf") ||
+      shouldRelaisTriggerTemp(TempSpindelRuecklauf_ThermistorTemp, SpindelRuecklauf_Thermistor_Maximal_Temp, "SpindelRuecklauf") ||
       shouldRelaisTriggerFlow(flowRate, min_flow_rate)) {
     RELAISVALUE = HIGH;
   } else {
