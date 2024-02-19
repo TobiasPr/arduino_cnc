@@ -1,6 +1,7 @@
 #include <Wire.h>               // Wire Bibliothek hochladen
 #include <LiquidCrystal_I2C.h>  // Vorher hinzugefügte LiquidCrystal_I2C Bibliothek hochladen
 #include <DallasTemperature.h>
+#include <NTC_Thermistor.h>
 #include "custom_chars.h"
 
 LiquidCrystal_I2C lcd1(0x27, 16, 2);  //Hier wird das erste Display benannt (Adresse/Zeichen pro Zeile/Anzahl Zeilen). In unserem Fall „lcd1“. Die Adresse des I²C Displays kann je nach Modul variieren.
@@ -40,6 +41,13 @@ unsigned long pulseCount = 0;
 unsigned long lastPulseTime = 0;
 float flowRate = 0.0;
 float min_flow_rate = 0.5;  // liter pro minute
+
+int SpindelRuecklauf_Thermistor_PIN = A0;
+double SpindelRuecklauf_Thermistor_Referenzwiderstand = 57300;
+double SpindelRuecklauf_Thermistor_Nominalwiderstand = 50000;
+double SpindelRuecklauf_Thermistor_Nominaltemperatur = 25;
+double SpindelRuecklauf_Thermistor_BWert = 3950;
+Thermistor* SpindelRuecklauf_Thermistor; 
 
 // max. Temperaturen der Motoren/Bauteile
 float Z_Achse_Maximal_Temp = 75;
@@ -88,6 +96,16 @@ void setup() {
   // custom chars
   lcd3.createChar(0, waterDrop);
   lastPulseTime = millis(); // set this to have correct flowRate from start
+
+  // setup thermistor
+  SpindelRuecklauf_Thermistor = new NTC_Thermistor(
+    SpindelRuecklauf_Thermistor_PIN, 
+    SpindelRuecklauf_Thermistor_Referenzwiderstand, 
+    SpindelRuecklauf_Thermistor_Nominalwiderstand, 
+    SpindelRuecklauf_Thermistor_Nominaltemperatur,
+    SpindelRuecklauf_Thermistor_BWert
+  );
+
 }
 
 String getTempString(DeviceAddress address) {
@@ -111,9 +129,10 @@ void looplcd() {
   float TempY1Achse = sensors.getTempC(Y1Achse);
   float TempY2Achse = sensors.getTempC(Y2Achse);
   float TempSpindel = sensors.getTempC(Spindel);
-  float TempWasser = sensors.getTempC(Wasser);
+  float TempFass = sensors.getTempC(Wasser);
   float TempSteuerung = sensors.getTempC(Steuerung);
   float TempRaumtemp = sensors.getTempC(Raumtemp);
+  double TempSpindelRuecklauf_Thermistor = SpindelRuecklauf_Thermistor->readCelsius();
 
   unsigned long now = millis();
   unsigned long pulseDuration = now - lastPulseTime;
@@ -129,13 +148,14 @@ void looplcd() {
   printTemperaturOnLCD("X-Achse", TempXAchse, &lcd1, 0);    
   printTemperaturOnLCD("Y1-Achse", TempY1Achse, &lcd2, 0);        
   printTemperaturOnLCD("Y2-Achse", TempY2Achse, &lcd2, 1);  
-  printTemperaturOnLCD("Fass", TempWasser, &lcd3, 0);
+  printTemperaturOnLCD("Fass", TempFass, &lcd3, 0);
 
   String wasser_flow_value = String(flowRate, 1) + "L/min";
   lcd3.setCursor(0, 1);
   lcd3.write(byte(0));
   lcd3.setCursor(1, 1);
   lcd3.print(wasser_flow_value);
+  lcd3.print(String(TempSpindelRuecklauf_Thermistor, 1));
 
   printTemperaturOnLCD("Steuerung", TempSteuerung, &lcd4, 0);
   printTemperaturOnLCD("Raumtemp.", TempRaumtemp, &lcd4, 1); 
@@ -154,7 +174,7 @@ void looplcd() {
   // TODO: wenn Taster gedrückt dann -> Relais LOW für 60 sec
   if (shouldRelaisTriggerTemp(TempY1Achse, Y1_Achse_Maximal_Temp, "Y1-Achse") ||
       shouldRelaisTriggerTemp(TempY2Achse, Y2_Achse_Maximal_Temp, "Y2-Achse") ||
-      shouldRelaisTriggerTemp(TempWasser, Wasser_Maximal_Temp, "Wasser") ||
+      shouldRelaisTriggerTemp(TempFass, Wasser_Maximal_Temp, "Wasser") ||
       shouldRelaisTriggerTemp(TempSteuerung, Steuerung_Maximal_Temp, "Steuerung") ||
       shouldRelaisTriggerTemp(TempRaumtemp, Raumtemp_Maximal_Temp, "Raumtemp") ||
       shouldRelaisTriggerFlow(flowRate, min_flow_rate)) {
