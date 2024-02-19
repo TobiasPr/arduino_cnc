@@ -58,7 +58,7 @@ float Spindel_Maximal_Temp = 35;
 float Wasser_Maximal_Temp = 33;
 float Steuerung_Maximal_Temp = 30;
 float Raumtemp_Maximal_Temp = 30;
-double SpindelRuecklauf_Thermistor_Macimal_Temp = 25;
+double SpindelRuecklauf_Thermistor_Maximal_Temp = 25;
 
 //Fehler Temperatusensoren
 float Senosr_Bus_oder_GND__nicht_angeschlossen = -127;
